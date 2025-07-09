@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 #define MAX_NICK_LEN 28
-#define MAX_PLAYERS 4
+#define MAX_PLAYERS 16
 #define DASH_COOLDOWN 0.5f
 
 typedef struct ship_input_packet_t {
