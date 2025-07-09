@@ -1,8 +1,10 @@
 #include "ship_logic.h"
 
 #include <math.h>
+#include <stdio.h>
+#include <string.h>
 
-void update_ship(const server_state_t* state, ship_t* ship, const float dt) {
+void update_ship(server_state_t* state, ship_t* ship, const float dt) {
     // rotation with inertia
     const float inertia = ship->size * 0.5f;
     if (ship->input_buffer.rotate_left) ship->angular_velocity -= 300.0f * dt / inertia;
@@ -47,6 +49,31 @@ void update_ship(const server_state_t* state, ship_t* ship, const float dt) {
 
     ship->x += ship->vx * dt;
     ship->y += ship->vy * dt;
+
+    // collision and impulse
+
+    for (int i = 0; i < MAX_PLAYERS; ++i) {
+        if (!state->ships[i].connected) continue;
+        if (memcmp(ship, &state->ships[i], sizeof(ship_t)) == 0) continue;
+
+        float dx = state->ships[i].x - ship->x;
+        float dy = state->ships[i].y - ship->y;
+
+        float dist = sqrt(dx*dx + dy*dy);
+
+        if (dist <= ship->size) {
+            float fvx = state->ships[i].vx;
+            float fvy = state->ships[i].vy;
+            float svx = ship->vx;
+            float svy = ship->vy;
+
+            state->ships[i].vx = svx;
+            state->ships[i].vy = svy;
+
+            ship->vx = fvx;
+            ship->vy = fvy;
+        }
+    }
 
     if (ship->dash_timer > 0.0f) {
         ship->vx -= cosf(ship->angle) * DASH_BOOST;
