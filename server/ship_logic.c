@@ -60,8 +60,17 @@ void update_ship(server_state_t* state, ship_t* ship, const float dt) {
         float dy = state->ships[i].y - ship->y;
 
         float dist = sqrt(dx*dx + dy*dy);
+        float collision_distance = ship->size/2+state->ships[i].size/2;
 
-        if (dist <= ship->size) {
+        if (dist <= collision_distance) {
+            if (dist <= collision_distance/2) {
+                ship->x -= collision_distance/2;
+                state->ships[i].x += collision_distance/2;
+
+                continue;
+            }
+
+
             float fvx = state->ships[i].vx;
             float fvy = state->ships[i].vy;
             float svx = ship->vx;
