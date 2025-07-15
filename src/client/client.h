@@ -3,8 +3,8 @@
 #include "../font/k_font.h"
 #include "../make_join_request.h"
 #include "../structs.h"
-#include "../window.h"
-#include "ship_renderer.h"
+#include "../rendering/window.h"
+#include "../rendering/ship_renderer.h"
 
 static int client_setup_socket(const char* ip, client_state_t* state) {
     if (!get_sockaddr_in(ip, &state->server_addr)) {
@@ -88,7 +88,14 @@ static void korabliki_client(const char* ip, const char* username) {
         ntohs(state.server_addr.sin_port),
         jrequest->name
     );
-    const window_t window = window_create("test", state.map.width, state.map.height);
+    window_t window = window_create("test", MIN(800, state.map.width), MIN(800, state.map.height));
+    ship_window_t swindow = {
+        .window = &window,
+        .max = {state.map.width, state.map.height},
+        .main_ship = &state.ships[sjrequest->player_id],
+        .offset = {0, 0},
+        .dead_zone = {300, 300, 200, 200}
+    };
 
     client_input_request_t input_req = {0};
     client_input_request_t old_input_req = input_req;
@@ -134,12 +141,13 @@ static void korabliki_client(const char* ip, const char* username) {
             old_input_req = input_req;
         }
 
+        camera_follow(&swindow);
         window_set_color(&window, 0, 0, 0, 255);
         window_clear(&window);
 
         for (size_t i = 0; i < state.ships_size; i++) {
-            window_render_ship_full(&window, &state.ships[i]);
-            k_font_render_centered(&window, state.ships[i].name, state.ships[i].x, state.ships[i].y + state.ships[i].size);
+            window_render_ship_full(&swindow, &state.ships[i]);
+            k_font_render_centered(&window, state.ships[i].name, state.ships[i].x - swindow.offset.x, state.ships[i].y + state.ships[i].size - swindow.offset.y);
         }
         //window_render_ship_base_direction(&window, 30, 30, ships[whi.id].size, ships[whi.id].angle, ships[whi.id].input_buffer.thrust);
 

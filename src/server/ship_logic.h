@@ -89,3 +89,34 @@ static void update_ship(const server_state_t* state, ship_t* ship, const float d
     ship->dash_timer -= dt;
     ship->dash_cooldown -= dt;
 }
+
+static void cpu_control(const server_state_t* state, ship_t* ship, const float x, const float y) {
+    float dx = x - ship->x;
+    float dy = y - ship->y;
+
+    if (dx > state->map.width / 2) dx -= state->map.width;
+    if (dx < -state->map.width / 2) dx += state->map.width;
+    if (dy > state->map.height / 2) dy -= state->map.height;
+    if (dy < -state->map.height / 2) dy += state->map.height;
+
+    const float distance = sqrtf(dx * dx + dy * dy);
+
+    const float desired_angle = atan2f(dy, dx);
+
+    float diff = desired_angle - ship->angle;
+    while (diff > M_PI) diff -= 2 * M_PI;
+    while (diff < -M_PI) diff += 2 * M_PI;
+
+    const float angle_threshold = 0.05f;
+    ship->input_buffer.rotate_left = diff < -angle_threshold;
+    ship->input_buffer.rotate_right = diff > angle_threshold;
+
+    ship->input_buffer.thrust = 0;
+
+    if (fabsf(diff) < 0.3f && distance > 40.0f) {
+        ship->input_buffer.thrust = 1;
+    }
+    else if (fabsf(diff) > 2.0f && distance < 80.0f) {
+        ship->input_buffer.thrust = -1;
+    }
+}

@@ -1,4 +1,5 @@
 #pragma once
+#include <SDL3/SDL_rect.h>
 
 typedef struct client_state_t {
     ship_t* ships;

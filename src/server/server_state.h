@@ -6,6 +6,10 @@
 typedef struct server_client_t {
     ship_t ship;
     struct sockaddr_in socket;
+    enum {
+        SERVER_CLIENT_PLAYER,
+        SERVER_CLIENT_CPU
+    } type;
 } server_client_t;
 
 typedef struct server_state_t {
@@ -32,16 +36,16 @@ static server_client_t* find_server_client_by_addr(const server_state_t* state, 
     return NULL;
 }
 
-static int register_new_client(server_state_t* state, const client_join_request_t* packet, const struct sockaddr_in* addr) {
+static server_client_t* register_new_client(server_state_t* state) {
     if (state->clients_size >= state->max_clients) {
-        return 0;
+        return NULL;
     }
     server_client_t* c = &state->clients[state->clients_size];
     state->clients_size++;
-    c->socket = *addr;
+
     ship_t* ship = &c->ship;
-    ship->x = state->map.width/2;
-    ship->y = state->map.height/2;
+    ship->x = state->map.width/8;
+    ship->y = state->map.height/8;
     ship->vx = 0;
     ship->vy = 0;
     ship->angle = 0;
@@ -49,11 +53,34 @@ static int register_new_client(server_state_t* state, const client_join_request_
     ship->size = 20.0f;
     ship->dash_timer = 0;
     ship->dash_cooldown = 0;
-    memcpy(ship->name, packet->name, MAX_NICK_LEN);
     ship->input_buffer.dash = 0;
     ship->input_buffer.rotate_left = 0;
     ship->input_buffer.rotate_right = 0;
     ship->input_buffer.thrust = 0;
+    ship->ping = 0;
+
+    return c;
+}
+
+static server_client_t* register_new_cpu(server_state_t* state) {
+    server_client_t* client = register_new_client(state);
+    if (client == NULL) {
+        return NULL;
+    }
+    memcpy(client->ship.name, "CPU", strlen("CPU") + 1);
+    client->type = SERVER_CLIENT_CPU;
+    return client;
+}
+
+static server_client_t* register_new_player(server_state_t* state, const client_join_request_t* packet, const struct sockaddr_in* addr) {
+    server_client_t* client = register_new_client(state);
+    if (client == NULL) {
+        return NULL;
+    }
+    client->type = SERVER_CLIENT_PLAYER;
+    client->socket = *addr;
+    ship_t* ship = &client->ship;
+    memcpy(ship->name, packet->name, MAX_NICK_LEN);
     ship->ping = INFINITY;
-    return 1;
+    return client;
 }

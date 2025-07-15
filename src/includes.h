@@ -13,3 +13,7 @@
 
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 #define MAX3(a, b, c) MAX(MAX(a, b), c)
+
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
+
+#define DIST(x1, y1, x2, y2) (sqrtf((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2)))

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../window.h"
+#include "../rendering/window.h"
 #include "k_font_ascii.h"
 #include "k_font_cyrillic.h"
 

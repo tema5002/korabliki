@@ -39,7 +39,7 @@ static void* accept_packets_thread(void* arg) {
         switch (buffer[0]) {
             case CLIENT_REQUEST_JOIN: {
                 const client_join_request_t* req = (client_join_request_t*)(buffer + 1);
-                if (!register_new_client(state, req, &client_addr)) {
+                if (!register_new_player(state, req, &client_addr)) {
                     const uint8_t c = SERVER_REQUEST_SERVER_FULL;
                     sendto(state->sock, &c, sizeof(c), 0,
                         (struct sockaddr*)&client_addr, sizeof(client_addr)
@@ -51,6 +51,7 @@ static void* accept_packets_thread(void* arg) {
                     server_join_request_t* jreq = (server_join_request_t*)(buffer2 + 1);
                     jreq->map = state->map;
                     jreq->max_ships_size = state->max_clients;
+                    jreq->player_id = state->clients_size - 1;
                     sendto(state->sock, buffer2, sizeof(buffer2), 0,
                         (struct sockaddr*)&client_addr, sizeof(client_addr)
                     );
@@ -88,12 +89,13 @@ static void korabliki_server(const char* ip) {
     if (!server_setup_socket(ip, &state)) {
         exit(EXIT_FAILURE);
     }
-    state.map.width = 1200;
-    state.map.height = 600;
+    state.map.width = 2400;
+    state.map.height = 2400;
 
     state.clients_size = 0;
     state.max_clients = 12;
     state.clients = malloc(sizeof(server_client_t) * state.max_clients);
+    register_new_cpu(&state);
 
     uint8_t* client_ship_data = malloc(sizeof(ship_t) * state.max_clients + 1);
     client_ship_data[0] = SERVER_REQUEST_SHIPS;
@@ -104,6 +106,21 @@ static void korabliki_server(const char* ip) {
     bool running = true;
     while (running) {
         for (size_t i = 0; i < state.clients_size; i++) {
+            if (state.clients[i].type == SERVER_CLIENT_CPU) {
+                ship_t* ship_to_follow = NULL;
+                for (size_t j = 0; j < state.clients_size; j++) {
+                    if (i == j) continue;
+                    float ix = state.clients[i].ship.x;
+                    float iy = state.clients[i].ship.y;
+                    if (ship_to_follow == NULL ||
+                        DIST(ix, iy, state.clients[j].ship.x, state.clients[j].ship.y) <
+                        DIST(ix, iy, ship_to_follow->x, ship_to_follow->y)) {
+                        ship_to_follow = &state.clients[j].ship;
+                    }
+                }
+                if (ship_to_follow != NULL)
+                    cpu_control(&state, &state.clients[i].ship, ship_to_follow->x, ship_to_follow->y);
+            }
             update_ship(&state, &state.clients[i].ship, 1/60.0f);
         }
 
@@ -112,7 +129,9 @@ static void korabliki_server(const char* ip) {
         }
 
         for (size_t i = 0; i < state.clients_size; i++) {
-            sendto(state.sock, client_ship_data, sizeof(ship_t) * state.clients_size + 1, 0, (struct sockaddr*)&state.clients[i].socket, sizeof(struct sockaddr_in));
+            if (state.clients[i].type == SERVER_CLIENT_PLAYER) {
+                sendto(state.sock, client_ship_data, sizeof(ship_t) * state.clients_size + 1, 0, (struct sockaddr*)&state.clients[i].socket, sizeof(struct sockaddr_in));
+            }
         }
         usleep(1000000/60);
     }

@@ -25,10 +25,6 @@ typedef struct ship_t {
     float ping;
 } __attribute__((packed)) ship_t;
 
-typedef struct registered_packet_t {
-    map_state_h map;
-} __attribute__((packed)) registered_packet_t;
-
 #define CLIENT_REQUEST_MAX_SIZE (\
     1 + /* packet type */ \
     MAX3(\
@@ -54,6 +50,7 @@ enum {
 typedef struct server_join_request_t {
     map_state_h map;
     size_t max_ships_size;
+    size_t player_id;
 } server_join_request_t;
 
 typedef struct client_join_request_t {
