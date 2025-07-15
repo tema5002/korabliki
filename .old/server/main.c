@@ -1,10 +1,7 @@
-#include <pthread.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <arpa/inet.h>
+
 
 #include "server_state.h"
-#include "ship_logic.h"
+#include "../../src/server/ship_logic.h"
 #include "../shared/get_sockaddr_in.h"
 
 void* send_thread(void* arg) {
@@ -29,20 +26,6 @@ void* send_thread(void* arg) {
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 int main(int argc, char* argv[]) {
-    if (argc < 2) {
-        fprintf(stderr, "usage: %s [ip]:[port]\n", argv[0]);
-        return 1;
-    }
-
-    server_state_t state = {0};
-    state.sock = socket(AF_INET, SOCK_DGRAM, 0);
-    state.server_addr = get_sockaddr_in(argv[1]);
-    bind(state.sock, (struct sockaddr*)&state.server_addr, sizeof(state.server_addr));
-    state.width = 1200;
-    state.height = 800;
-
-    pthread_t tid;
-    pthread_create(&tid, NULL, send_thread, &state);
     while (1) {
         struct sockaddr_in client_addr;
         socklen_t addr_len = sizeof(client_addr);

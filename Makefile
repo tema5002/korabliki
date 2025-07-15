@@ -1,45 +1,22 @@
 CC = clang
-CFLAGS = -Wall -Wextra -O3 -std=c99 -D_XOPEN_SOURCE=500 -Wunused-function
-LDFLAGS = -O3 -lSDL3 -lm
+CFLAGS = -Wall -Wextra -O3 -std=c99 -D_XOPEN_SOURCE=500
+LDFLAGS = -lSDL3 -lm
 
-CLIENT_SRC = client
-CLIENT_SRCS = $(shell find $(CLIENT_SRC) -type f -name '*.c')
-CLIENT_OBJS = $(patsubst %.c, $(OBJ_DIR)/%.o, $(CLIENT_SRCS))
+TARGET = korabliki
 
-SERVER_SRC = server
-SERVER_SRCS = $(shell find $(SERVER_SRC) -type f -name '*.c')
-SERVER_OBJS = $(patsubst %.c, $(OBJ_DIR)/%.o, $(SERVER_SRCS))
+FONT_PNGS = $(wildcard assets/font/*.png)
+FONT_HEADERS = $(FONT_PNGS:assets/font/%.png=src/font/%.h)
 
-SHARED_SRC = shared
-SHARED_SRCS = $(shell find $(SHARED_SRC) -type f -name '*.c')
-SHARED_OBJS = $(patsubst %.c, $(OBJ_DIR)/%.o, $(SHARED_SRCS))
+all: $(TARGET)
 
-CLIENT_TARGET = korabliki
-SERVER_TARGET = korabliki_server
+src/font/%.h: fontgen.py assets/font/%.png
+	mkdir -p src/font
+	python3 fontgen.py $* 12
 
-OBJ_DIR = obj
-
-all: $(CLIENT_TARGET) $(SERVER_TARGET)
-
-$(CLIENT_TARGET): $(CLIENT_OBJS) $(SHARED_OBJS)
-	$(CC) -o $@ $^ $(LDFLAGS)
-
-$(SERVER_TARGET): $(SERVER_OBJS) $(SHARED_OBJS)
-	$(CC) -o $@ $^ $(LDFLAGS)
-
-$(OBJ_DIR)/client/%.o: $(CLIENT_SRC)/%.c
-	mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(OBJ_DIR)/server/%.o: $(SERVER_SRC)/%.c
-	mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(OBJ_DIR)/shared/%.o: $(SHARED_SRC)/%.c
-	mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -c $< -o $@
+$(TARGET): $(FONT_HEADERS) src/main.c $(wildcard src/*.h src/server/*.h src/client/*.h)
+	$(CC) src/main.c -o $(TARGET) $(CFLAGS) $(LDFLAGS)
 
 clean:
-	rm -rf $(OBJ_DIR) $(CLIENT_TARGET) $(SERVER_TARGET)
+	rm -f $(TARGET) $(FONT_HEADERS)
 
 .PHONY: all clean

@@ -1,15 +1,18 @@
-#include "window.h"
+#pragma once
 
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <SDL3/SDL.h>
 
-window_t window_create(const char* name, const int width, const int height) {
+typedef struct window_t {
+    SDL_Window* window;
+    SDL_Renderer* renderer;
+} window_t;
+
+static window_t window_create(const char* name, const int width, const int height) {
     window_t window;
 
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         fprintf(stderr, "SDL_Init(): %s\n", SDL_GetError());
-        exit(1);
+        exit(0);
     }
 
     window.window = SDL_CreateWindow(
@@ -17,41 +20,48 @@ window_t window_create(const char* name, const int width, const int height) {
         width,
         height,
         SDL_WINDOW_RESIZABLE
-        //SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_BORDERLESS | SDL_WINDOW_TRANSPARENT
     );
 
     if (!window.window) {
         fprintf(stderr, "SDL_CreateWindow(): %s\n", SDL_GetError());
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     window.renderer = SDL_CreateRenderer(window.window, NULL);
     if (!window.renderer) {
-        printf("SDL_CreateRenderer(): %s\n", SDL_GetError());
-        exit(1);
+        fprintf(stderr, "SDL_CreateRenderer(): %s\n", SDL_GetError());
+        exit(EXIT_FAILURE);
     }
 
     return window;
 }
 
-void window_scale(const window_t* window, const float scale) {
+static void window_scale(const window_t* window, const float scale) {
     SDL_SetRenderScale(window->renderer, scale, scale);
 }
 
-void window_set_color(const window_t* window, const Uint8 r, const Uint8 g, const Uint8 b, const Uint8 a) {
+static void window_set_color(const window_t* window, const Uint8 r, const Uint8 g, const Uint8 b, const Uint8 a) {
     SDL_SetRenderDrawColor(window->renderer, r, g, b, a);
 }
 
-void window_render_line(const window_t* window, const float x1, const float y1, const float x2, const float y2) {
+static void window_clear(const window_t* window) {
+    SDL_RenderClear(window->renderer);
+}
+
+static void window_render_point(const window_t* window, const float x, const float y) {
+    SDL_RenderPoint(window->renderer, x, y);
+}
+
+static void window_render_line(const window_t* window, const float x1, const float y1, const float x2, const float y2) {
     SDL_RenderLine(window->renderer, x1, y1, x2, y2);
 }
 
-void window_render_rect(const window_t* window, const float x, const float y, const float w, const float h) {
+static void window_render_rect(const window_t* window, const float x, const float y, const float w, const float h) {
     const SDL_FRect rect = {x, y, w, h};
     SDL_RenderRect(window->renderer, &rect);
 }
 
-void window_render_rotated_square(const window_t* window, const float x, const float y, const float size, const float angle_rad) {
+static void window_render_rotated_square(const window_t* window, const float x, const float y, const float size, const float angle_rad) {
     const float half = size / 2.0f;
 
     SDL_FPoint points[5];
@@ -72,7 +82,7 @@ void window_render_rotated_square(const window_t* window, const float x, const f
     SDL_RenderLines(window->renderer, points, 5);
 }
 
-void window_render_arrow(const window_t* window, const float x, const float y, const float dx, const float dy) {
+static void window_render_arrow(const window_t* window, const float x, const float y, const float dx, const float dy) {
     const float end_x = x + dx;
     const float end_y = y + dy;
 
@@ -103,6 +113,10 @@ void window_render_arrow(const window_t* window, const float x, const float y, c
     window_render_line(window, end_x, end_y, right_x, right_y);
 }
 
-void window_render_arrow_angle(const window_t* window, const float x, const float y, const float angle, const float size) {
+static void window_render_arrow_angle(const window_t* window, const float x, const float y, const float angle, const float size) {
     window_render_arrow(window, x, y, cosf(angle) * size, sinf(angle) * size);
+}
+
+static void window_render(const window_t* window) {
+    SDL_RenderPresent(window->renderer);
 }

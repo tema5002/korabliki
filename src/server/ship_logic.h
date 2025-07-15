@@ -1,10 +1,10 @@
-#include "ship_logic.h"
+#pragma once
 
-#include <math.h>
-#include <stdio.h>
-#include <string.h>
+#include "../structs.h"
+#define DASH_COOLDOWN 0.5f
+#define DASH_BOOST 666.66f
 
-void update_ship(server_state_t* state, ship_t* ship, const float dt) {
+static void update_ship(const server_state_t* state, ship_t* ship, const float dt) {
     // rotation with inertia
     const float inertia = ship->size * 0.5f;
     if (ship->input_buffer.rotate_left) ship->angular_velocity -= 300.0f * dt / inertia;
@@ -51,36 +51,30 @@ void update_ship(server_state_t* state, ship_t* ship, const float dt) {
     ship->y += ship->vy * dt;
 
     // collision and impulse
+    for (size_t i = 0; i < state->clients_size; i++) {
+        ship_t* s = &state->clients[i].ship;
+        if (s == ship) continue;
 
-    for (int i = 0; i < MAX_PLAYERS; ++i) {
-        if (!state->ships[i].connected) continue;
-        if (memcmp(ship, &state->ships[i], sizeof(ship_t)) == 0) continue;
+        const float dx = s->x - ship->x;
+        const float dy = s->y - ship->y;
 
-        float dx = state->ships[i].x - ship->x;
-        float dy = state->ships[i].y - ship->y;
-
-        float dist = sqrt(dx*dx + dy*dy);
-        float collision_distance = ship->size/2+state->ships[i].size/2;
+        const float dist = sqrtf(dx*dx + dy*dy);
+        const float collision_distance = ship->size/2 + s->size/2;
 
         if (dist <= collision_distance) {
             if (dist <= collision_distance/2) {
                 ship->x -= collision_distance/2;
-                state->ships[i].x += collision_distance/2;
-
+                s->x += collision_distance/2;
                 continue;
             }
 
+            const float tvx = s->vx;
+            s->vx = ship->vx;
+            ship->vx = tvx;
 
-            float fvx = state->ships[i].vx;
-            float fvy = state->ships[i].vy;
-            float svx = ship->vx;
-            float svy = ship->vy;
-
-            state->ships[i].vx = svx;
-            state->ships[i].vy = svy;
-
-            ship->vx = fvx;
-            ship->vy = fvy;
+            const float tvy = s->vy;
+            s->vy = ship->vy;
+            ship->vy = tvy;
         }
     }
 
@@ -89,8 +83,8 @@ void update_ship(server_state_t* state, ship_t* ship, const float dt) {
         ship->vy -= sinf(ship->angle) * DASH_BOOST;
     }
 
-    ship->x = fmodf(ship->x + state->width, state->width);
-    ship->y = fmodf(ship->y + state->height, state->height);
+    ship->x = fmodf(ship->x + state->map.width, state->map.width);
+    ship->y = fmodf(ship->y + state->map.height, state->map.height);
 
     ship->dash_timer -= dt;
     ship->dash_cooldown -= dt;
