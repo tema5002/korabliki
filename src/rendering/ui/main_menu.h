@@ -186,6 +186,8 @@ static void ui_window_make_main_menu(ui_window_t* ui_window, const float scale) 
     ui_window->array = Clay_EndLayout();
 }
 
+static ship_t ui_window_main_menu_ship;
+
 static void ui_window_render_main_menu(ui_window_t* ui_window) {
     window_set_color(ui_window->window, 0, 0, 0, 255);
     window_clear(ui_window->window);
@@ -221,11 +223,11 @@ static void ui_window_render_main_menu(ui_window_t* ui_window) {
         window_render_line(ui_window->window, cx, cy, x1, y1);
         window_scale(ui_window->window, 1);
     }
-    cpu_control(&ui_window->value.bg_ship, ui_window->window->mouse.x, ui_window->window->mouse.y);
-    update_ship(&ui_window->value.bg_ship, 1.0f/60.0f, ui_window->window->size);
-    window_render_ship_full(ui_window->window, &ui_window->value.bg_ship, &((vector2d){0}));
-    k_font_render_centered(ui_window->window, ui_window->value.bg_ship.name,
-        ui_window->value.bg_ship.x, ui_window->value.bg_ship.y + ui_window->value.bg_ship.size, 1);
+    cpu_control(&ui_window->main_menu_bg_ship, ui_window->window->mouse.x, ui_window->window->mouse.y);
+    update_ship(&ui_window->main_menu_bg_ship, 1.0f/60.0f, ui_window->window->size);
+    window_render_ship_full(ui_window->window, &ui_window->main_menu_bg_ship, &((vector2d){0}));
+    //k_font_render_centered(ui_window->window, ui_window->value.bg_ship.name,
+    //    ui_window->value.bg_ship.x, ui_window->value.bg_ship.y + ui_window->value.bg_ship.size, 1);
 
     ui_window_draw(ui_window);
 }

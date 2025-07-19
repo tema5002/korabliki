@@ -14,8 +14,8 @@ typedef struct ui_window_t {
         UI_WINDOW_STATE_MAIN_MENU,
         UI_WINDOW_STATE_LOCAL_GAME
     } state;
+    ship_t main_menu_bg_ship;
     union {
-        ship_t bg_ship; // main menu
         struct {
             map_state_h map;
             ship_t ship;
@@ -43,16 +43,15 @@ static ui_window_t ui_window_create(window_t* window) {
         (Clay_ErrorHandler) { HandleClayErrors }
     );
     ui_window.state = UI_WINDOW_STATE_MAIN_MENU;
-    ui_window.value.bg_ship = (ship_t) {
-        400, 300,
-        0, 0,
-        0, 0,
-        20,
-        0,
-        0,
-        "govnozavr",
-        {0},
-        0
+    ui_window.main_menu_bg_ship = (ship_t) {
+        .state = {
+            window->size.x/2, window->size.y/2,
+            0, 0,
+            0, 0,
+            20.0f,
+            0, 0
+        },
+        .input_buffer = {0}
     };
     Clay_SetMeasureTextFunction(clay_measure_text, 0);
     return ui_window;
@@ -60,32 +59,20 @@ static ui_window_t ui_window_create(window_t* window) {
 
 static void ui_window_switch_to_main_menu(ui_window_t* ui_window) {
     ui_window->state = UI_WINDOW_STATE_MAIN_MENU;
-    ui_window->value.bg_ship = (ship_t) {
-        ui_window->window->size.x/2, ui_window->window->size.y/2,
-        0, 0,
-        0, 0,
-        20,
-        0,
-        0,
-        "govnozavr",
-        {0},
-        0
-    };
 }
 
 static void ui_window_switch_to_local_game(ui_window_t* ui_window) {
     ui_window->state = UI_WINDOW_STATE_LOCAL_GAME;
     ui_window->value.local_data.map = (map_state_h){{4800, 4800}};
     ui_window->value.local_data.ship = (ship_t) {
-        ui_window->window->size.x/2, ui_window->window->size.y/2,
-        0, 0,
-        0, 0,
-        20,
-        0,
-        0,
-        "unnamed",
-        {0},
-        0
+        .state = {
+            ui_window->window->size.x/2, ui_window->window->size.y/2,
+            0, 0,
+            0, 0,
+            20.0f,
+            0, 0
+        },
+        .input_buffer = {0}
     };
 }
 

@@ -78,7 +78,7 @@ static void mod_audio_callback(void* userdata, SDL_AudioStream* stream, int addi
 }
 
 static int mod_init() {
-    if (SDL_Init(SDL_INIT_AUDIO) < 0) {
+    if (!SDL_Init(SDL_INIT_AUDIO)) {
         fprintf(stderr, "SDL_Init failed: %s\n", SDL_GetError());
         return 0;
     }

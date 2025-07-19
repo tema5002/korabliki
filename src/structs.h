@@ -22,7 +22,6 @@ typedef struct ship_state_t {
 } __attribute__((packed)) ship_state_t;
 
 typedef struct ship_t {
-    char name[MAX_NICK_LEN];
     ship_state_t state;
     client_input_request_t input_buffer;
 } __attribute__((packed)) ship_t;

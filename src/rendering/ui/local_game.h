@@ -52,5 +52,5 @@ static void ui_window_render_local_game(ui_window_t* ui_window) {
     }
 
     window_render_ship_full(ui_window->window, ship, offset);
-    k_font_render_centered(ui_window->window, ship->name, ship->x - offset->x, ship->y + ship->size - offset->y, 1);
+    //k_font_render_centered(ui_window->window, ship->name, ship->x - offset->x, ship->y + ship->size - offset->y, 1);
 }

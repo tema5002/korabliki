@@ -4,9 +4,9 @@
 #include "window.h"
 #include "../vector2d.h"
 
-static void camera_follow(const window_t* w, const ship_t* ship, vector2d* offset, const vector2d* max) {
-    float screen_x = ship->x - offset->x;
-    float screen_y = ship->y - offset->y;
+static void camera_follow(const window_t* w, const ship_state_t* state, vector2d* offset, const vector2d* max) {
+    float screen_x = state->x - offset->x;
+    float screen_y = state->y - offset->y;
 
     float zone_x_min = w->size.x / 3.0f;
     float zone_x_max = w->size.x * 2.0f / 3.0f;
@@ -88,22 +88,22 @@ static void window_render_ship_velocity(
     window_render_arrow(window, x - offset->x, y - offset->y, vx, vy);
 }
 
-static void window_render_ship_cooldown(const window_t* window, const ship_t* ship, const vector2d* offset) {
-    if (ship->dash_cooldown < 0.0f) return;
+static void window_render_ship_cooldown(const window_t* window, const ship_state_t* state, const vector2d* offset) {
+    if (state->dash_cooldown < 0.0f) return;
 
-    const float cooldown_ratio = 1.0f - ship->dash_cooldown / DASH_COOLDOWN;
+    const float cooldown_ratio = 1.0f - state->dash_cooldown / DASH_COOLDOWN;
 
-    const float bar_width = ship->size;
+    const float bar_width = state->size;
     const float bar_height = 4.0f;
 
-    const float x = ship->x - offset->x;
-    const float y = ship->y - offset->y;
+    const float x = state->x - offset->x;
+    const float y = state->y - offset->y;
 
     window_set_color(window, 100, 100, 100, 150);
-    window_render_rect(window, x - bar_width/2, y + ship->size/2 + 8, bar_width, bar_height);
+    window_render_rect(window, x - bar_width/2, y + state->size/2 + 8, bar_width, bar_height);
 
     window_set_color(window, 0, 255, 255, 200);
-    window_render_rect(window, x - bar_width/2, y + ship->size/2 + 8, bar_width * cooldown_ratio, bar_height);
+    window_render_rect(window, x - bar_width/2, y + state->size/2 + 8, bar_width * cooldown_ratio, bar_height);
 }
 
 static void window_render_ship_base_direction(
@@ -120,8 +120,9 @@ static void window_render_ship_base_direction(
 }
 
 static void window_render_ship_full(const window_t* window, const ship_t* ship, const vector2d* offset) {
-    window_render_ship_base(window, ship->x, ship->y, offset, ship->angle, ship->size);
-    window_render_ship_direction(window, ship->x, ship->y, offset, ship->angle, ship->input_buffer.thrust);
-    window_render_ship_velocity(window, ship->x, ship->y, offset, ship->vx, ship->vy);
-    window_render_ship_cooldown(window, ship, offset);
+    const ship_state_t* state = &ship->state;
+    window_render_ship_base(window, state->x, state->y, offset, state->angle, state->size);
+    window_render_ship_direction(window, state->x, state->y, offset, state->angle, ship->input_buffer.thrust);
+    window_render_ship_velocity(window, state->x, state->y, offset, state->vx, state->vy);
+    window_render_ship_cooldown(window, state, offset);
 }
