@@ -20,8 +20,6 @@ int main() {
         return 1;
     }
 
-    // что теперь чтобы не вставлять кучу кода в основной цикл игры
-
     bool running = true;
     while (running) {
         uint32_t start = SDL_GetTicks();

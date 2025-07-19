@@ -1,8 +1,4 @@
 #pragma once
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_audio.h>
-#include <libopenmpt/libopenmpt.h>
-#include <stdio.h>
 
 typedef struct jukebox_t {
     openmpt_module* module;

@@ -1,9 +1,7 @@
 #pragma once
-#include <stdbool.h>
-#include <stdint.h>
 #include "map_state.h"
 
-#define MAX_NICK_LEN 28
+#define MAX_NICK_LEN 32
 #define DASH_COOLDOWN 0.5f
 
 typedef struct client_input_request_t {
@@ -13,7 +11,7 @@ typedef struct client_input_request_t {
     bool dash;
 } __attribute__((packed)) client_input_request_t;
 
-typedef struct ship_t {
+typedef struct ship_state_t {
     float x, y;
     float vx, vy;
     float angle;
@@ -21,9 +19,12 @@ typedef struct ship_t {
     float size;
     float dash_timer;
     float dash_cooldown;
+} __attribute__((packed)) ship_state_t;
+
+typedef struct ship_t {
     char name[MAX_NICK_LEN];
+    ship_state_t state;
     client_input_request_t input_buffer;
-    float ping;
 } __attribute__((packed)) ship_t;
 
 #define CLIENT_REQUEST_MAX_SIZE (\

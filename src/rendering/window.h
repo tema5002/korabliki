@@ -1,6 +1,5 @@
 #pragma once
 
-#include <SDL3/SDL.h>
 #include "../vector2d.h"
 
 typedef struct window_t {
