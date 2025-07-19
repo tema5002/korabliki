@@ -1,20 +1,20 @@
 CC = clang
-CFLAGS = -Wall -Wextra -O3 -std=c99 -D_XOPEN_SOURCE=500
-LDFLAGS = -lSDL3 -lm
+CFLAGS = -Wall -std=c99 -D_XOPEN_SOURCE=500
+LDFLAGS = -lSDL3 -lopenmpt -lm
 
-TARGET = korabliki
+CLIENT = korabliki
 
 FONT_PNGS = $(wildcard assets/font/*.png)
 FONT_HEADERS = $(FONT_PNGS:assets/font/%.png=src/font/%.h)
 
-all: $(TARGET)
+all: $(CLIENT)
 
 src/font/%.h: fontgen.py assets/font/%.png
 	mkdir -p src/font
 	python3 fontgen.py $* 12
 
-$(TARGET): $(FONT_HEADERS) src/main.c $(wildcard src/*.h src/server/*.h src/client/*.h)
-	$(CC) src/main.c -o $(TARGET) $(CFLAGS) $(LDFLAGS)
+$(CLIENT): $(FONT_HEADERS) src/main.c $(wildcard src/*.h src/server/*.h src/client/*.h)
+	$(CC) src/client.c -o $(CLIENT) $(CFLAGS) $(LDFLAGS)
 
 clean:
 	rm -f $(TARGET) $(FONT_HEADERS)

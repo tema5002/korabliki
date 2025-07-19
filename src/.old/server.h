@@ -1,8 +1,8 @@
 #pragma once
-#include "../get_sockaddr_in.h"
+#include "get_sockaddr_in.h"
 #include "server_state.h"
 #include "../structs.h"
-#include "ship_logic.h"
+#include "../ship_logic.h"
 
 static int server_setup_socket(const char* ip, server_state_t* state) {
     if (!get_sockaddr_in(ip, &state->server_addr)) {

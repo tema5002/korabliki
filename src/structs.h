@@ -1,6 +1,7 @@
 #pragma once
 #include <stdbool.h>
 #include <stdint.h>
+#include "map_state.h"
 
 #define MAX_NICK_LEN 28
 #define DASH_COOLDOWN 0.5f

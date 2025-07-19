@@ -1,7 +1,7 @@
 #pragma once
 #include "../map_state.h"
 #include "../structs.h"
-#include "../memeq.h"
+#include "memeq.h"
 
 typedef struct server_client_t {
     ship_t ship;

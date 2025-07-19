@@ -1,14 +1,19 @@
 #pragma once
 
 #include <SDL3/SDL.h>
+#include "../vector2d.h"
 
 typedef struct window_t {
     SDL_Window* window;
     SDL_Renderer* renderer;
+    vector2d size;
+    vector2d mouse;
+    bool mouse_down;
 } window_t;
 
 static window_t window_create(const char* name, const int width, const int height) {
     window_t window;
+    window.size = (vector2d){width, height};
 
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         fprintf(stderr, "SDL_Init(): %s\n", SDL_GetError());
@@ -59,6 +64,11 @@ static void window_render_line(const window_t* window, const float x1, const flo
 static void window_render_rect(const window_t* window, const float x, const float y, const float w, const float h) {
     const SDL_FRect rect = {x, y, w, h};
     SDL_RenderRect(window->renderer, &rect);
+}
+
+static void window_render_fill_rect(const window_t* window, const float x, const float y, const float w, const float h) {
+    const SDL_FRect rect = {x, y, w, h};
+    SDL_RenderFillRect(window->renderer, &rect);
 }
 
 static void window_render_rotated_square(const window_t* window, const float x, const float y, const float size, const float angle_rad) {

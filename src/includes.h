@@ -17,3 +17,11 @@
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
 #define DIST(x1, y1, x2, y2) (sqrtf((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2)))
+
+static void* safe_malloc(const size_t bytes) {
+    void* b = malloc(bytes);
+    if (!b) {
+        exit(EXIT_FAILURE);
+    }
+    return b;
+}
